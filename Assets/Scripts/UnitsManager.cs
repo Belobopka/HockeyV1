@@ -4,6 +4,7 @@ using System.Linq;
 using UnityEngine.Tilemaps;
 using DefaultNamespace;
 using UnityEngine;
+using UnityEngine.UIElements;
 using Utils;
 
 public class UnitsManager: MonoBehaviour
@@ -16,6 +17,9 @@ public class UnitsManager: MonoBehaviour
     public int teamPlayersCount = 6;
     private Collider _tileMapCollider;
     private GridManager _gridManager;
+    public List<Vector3Int> availableTiles;
+    // public List<Vector3Int> allYCells;
+    public List<Vector3Int> newList;
     public bool IsUnitMoving => CheckIsUnitMoving();
     
     private void Start()
@@ -37,14 +41,6 @@ public class UnitsManager: MonoBehaviour
             unit.ProceedToNextTurn();
         }
     }
-
-    private void InitTeam(Vector3Int startCellPosition)
-    {
-        for (int i = 0; i < teamPlayersCount; i++)
-        {
-            InitUnitObject(startCellPosition, i);
-        } 
-    }
     
     public bool CheckIsAllUnitsMoved()
     {
@@ -56,22 +52,103 @@ public class UnitsManager: MonoBehaviour
         return units.Any(unit => unit.isMoving);
     }
 
-    private void InitUnitObject(Vector3Int startCellPosition, int i)
+    private void InitUnitObject(Vector3Int cellPosition)
     {
-        var pos = new Vector3Int(startCellPosition.x, startCellPosition.y, 0) + new Vector3Int(0, i, 0);
-        var inst = Instantiate(unitPrefabs[0], tileMap.CellToWorld(pos), Quaternion.identity);
+        var inst = Instantiate(unitPrefabs[0], tileMap.CellToWorld(cellPosition), Quaternion.identity);
         var unitManager = inst.GetComponent<UnitManager>();
-        unitManager.cellPosition = pos;
+        unitManager.cellPosition = cellPosition;
         units.Add(unitManager);
     }
 
+    private List<Vector3Int> GetAllAvailableCells()
+    {
+        var tileCellLocations = new List<Vector3Int>();
+
+        foreach (var pos in tileMap.cellBounds.allPositionsWithin)
+        {   
+            Vector3Int localPlace = new Vector3Int(pos.x, pos.y, pos.z);
+            if (tileMap.HasTile(localPlace))
+            {
+                tileCellLocations.Add(pos);
+            }
+        }
+
+        return tileCellLocations;
+    }
+    
+    private void InitTeam(List<Vector3Int> cells)
+    {
+        for (var i = 0; i < cells.Count; i++)
+        {
+            InitUnitObject(cells[i]);
+        } 
+    }
+
+    private List<Vector3Int> PrepareTeam1Tiles( List<Vector3Int> allAvailableCellPositions)
+    {
+        var tileCellLocations = new List<Vector3Int>();
+
+        var allYCells = new List<Vector3Int>(GetYCells(allAvailableCellPositions));
+        
+        var yCount = allYCells.Count;
+        
+        while (yCount < teamPlayersCount)
+        { 
+           RemoveCellsFromList(allAvailableCellPositions, allYCells[allYCells.Count - 1].x );
+           var newListok = GetYCells(allAvailableCellPositions);
+            foreach (var item in newListok)
+            {
+                allYCells.Add(item);
+            }
+
+            yCount = allYCells.Count;
+        }
+        for (var i = 0; i < teamPlayersCount; i++)
+        {
+            tileCellLocations.Add(allYCells[i]);
+        }
+        
+        return tileCellLocations;
+    }
+    
+    private List<Vector3Int> GetYCells(List<Vector3Int> list)
+    {
+        int? y = null;
+        var newYCells = new List<Vector3Int>();
+        foreach (var t in list)
+        {
+            if (y != t.y)
+            {
+                newYCells.Add(t);
+                y = t.y;
+            }
+            
+        }
+
+        return newYCells;
+    }
+
+    private void RemoveCellsFromList(List<Vector3Int> list, int x)
+    {
+        list.RemoveAll(delegate(Vector3Int i) { return i.x == x; });
+    }
+
+
+
     public void InitUnits()
     {
-        var cellBounds = tileMap.cellBounds;
-        var team1StartTile = cellBounds.min;
-        var team2StartTile = new Vector3Int( -1  +cellBounds.max.x, -cellBounds.max.y, cellBounds.max.z);
-        InitTeam(team1StartTile);
-        InitTeam(team2StartTile);
+        var allAvailableCellPositions = GetAllAvailableCells();
+        var team1Tiles = PrepareTeam1Tiles(allAvailableCellPositions);
+        availableTiles = allAvailableCellPositions;
+        var team2Cells = new List<Vector3Int>();
+        foreach (var cell in allAvailableCellPositions)
+        {
+            team2Cells.Add(cell);
+        }
+        team2Cells.Reverse();
+        var team2Tiles = PrepareTeam1Tiles(team2Cells);
+        InitTeam(team1Tiles);
+        InitTeam(team2Tiles);
     }
 
     public void ClearSelectedUnit()
@@ -125,7 +202,7 @@ public class UnitsManager: MonoBehaviour
             var tileUnit = getUnitOnTile((Vector3)mouseWorldClick);
             
             var cellPosition = _gridManager.GetMouseCellClick((Vector3)mouseWorldClick);
-            
+  
             var hasCell = tileMap.GetTile((Vector3Int)cellPosition);
             if (!hasCell)
             {

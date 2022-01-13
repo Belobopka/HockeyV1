@@ -21,7 +21,7 @@ namespace DefaultNamespace
         
         public void ProceedPlacing()
         {
-            var color = new Color(255, 255, 255, 0);
+            var color = new Color(255, 255, 255, 0.5F);
             _puckObject.ChangeColor(color);
             _isPlaced = false;
             _isPlacingPuck = true;
