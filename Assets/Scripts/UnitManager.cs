@@ -65,11 +65,11 @@ public class UnitManager: MovingObject
     
     public void Move(Vector3Int newCellPosition, Vector3 moveTo, Tilemap tilemap)
     {
-        print(moved);
-        if (moved)
-        {
-            return;
-        }
+        
+        // if (moved)
+        // {
+        //     return;
+        // }
         var cellCenter = tilemap.GetCellCenterWorld(newCellPosition);
         cellPosition = newCellPosition;
         moved = true;
