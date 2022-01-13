@@ -8,42 +8,30 @@ namespace DefaultNamespace
 {
     public class GridManager: MonoBehaviour
     {
-        [SerializeField] private Tile tile;
-        public Tilemap tilemap;
+        public Tilemap tileMap;
         public Camera globalCamera;
         private BoxCollider _tileMapCollider;
-        private Vector3? _tileVector = null;
-        public bool checkIsCoordinateInBounds()
-        {
-            return true;
-        }
 
         private void Start()
         {
-            _tileMapCollider = tilemap.GetComponent<BoxCollider>();
+            _tileMapCollider = tileMap.GetComponent<BoxCollider>();
         }
         
-        private void Update()
+        public Vector3? GetMouseWorldClick(Vector3 mouseCoordinates)
         {
-            if (Input.GetButtonDown("Fire1"))
-            {
-                // var mouseCoordinates = Input.mousePosition;
-                // var ray = globalCamera.ScreenPointToRay(mouseCoordinates);
-                // if (!_tileMapCollider.Raycast(ray, out var hit, 300.0f)) return;
-                // var cell = tilemap.WorldToCell(hit.point);
-                // // if (_tileVector is null)
-                // // {
-                // //     _tileVector = tilemap.CellToWorld(cell);
-                // // }
-                // // else
-                // // {
-                // //     CubeLinedraw((Vector3) _tileVector, tilemap.CellToWorld(cell));
-                // // }
-                // _tileVector = tilemap.CellToWorld(cell);
-                // tilemap.SetTile(new Vector3Int(cell.x, cell.y, cell.z), tile);
-                //
-                // var cube = GridCoordinates.UnityCellToCube(cell);
-            }
+            var ray = globalCamera.ScreenPointToRay(mouseCoordinates);
+            if (!_tileMapCollider.Raycast(ray, out var hit, 300.0f)) return null;
+            return hit.point; 
+        }
+        public Vector3Int GetMouseCellClick(Vector3 mouseCoordinates)
+        {
+            return tileMap.WorldToCell(mouseCoordinates); 
+        }
+
+        public bool CheckHasCellOnClickPosition(Vector3 mouseWorldClick)
+        {
+            var cellPosition = GetMouseCellClick(mouseWorldClick);
+            return tileMap.GetTile(cellPosition);
         }
     }
 }

@@ -15,11 +15,13 @@ public class UnitsManager: MonoBehaviour
     public Tilemap tileMap;
     public int teamPlayersCount = 6;
     private Collider _tileMapCollider;
+    private GridManager _gridManager;
     public bool IsUnitMoving => CheckIsUnitMoving();
-    public GameObject unitObject;
+    
     private void Start()
     {
         _tileMapCollider = tileMap.GetComponent<Collider>();
+        _gridManager = GetComponent<GridManager>();
     }
 
     // private UnitManager GetUnitFromPosition()
@@ -72,20 +74,19 @@ public class UnitsManager: MonoBehaviour
         InitTeam(team2StartTile);
     }
 
-    private Vector3? GetMouseWorldClick(Vector3 mouseCoordinates)
+    public void ClearSelectedUnit()
     {
-        var ray = globalCamera.ScreenPointToRay(mouseCoordinates);
-        if (!_tileMapCollider.Raycast(ray, out var hit, 300.0f)) return null;
-        return hit.point; 
-    }
-    private Vector3Int? GetMouseCellClick(Vector3 mouseCoordinates)
-    {
-        return tileMap.WorldToCell(mouseCoordinates); 
+        if (selectedUnit)
+        {
+            selectedUnit.HandleUnitClick();
+            selectedUnit = null;     
+        }
+
     }
 
-    private UnitManager getUnitOnTile(Vector3 mouseCoordinates)
+    public UnitManager getUnitOnTile(Vector3 mouseCoordinates)
     {
-        var cell = GetMouseCellClick(mouseCoordinates);
+        var cell = _gridManager.GetMouseCellClick(mouseCoordinates);
         foreach (var unit in units)
         {
             if (unit.cellPosition.Equals(cell))
@@ -113,16 +114,24 @@ public class UnitsManager: MonoBehaviour
         if (Input.GetButtonDown("Fire1"))
         {
             var coords = Input.mousePosition;
-            var mouseWorldClick = GetMouseWorldClick(coords);
+            var mouseWorldClick = _gridManager.GetMouseWorldClick(coords);
+            
             if (!mouseWorldClick.HasValue)
             {
                 return;
                 
             }
-            var tileUnit = getUnitOnTile( (Vector3)mouseWorldClick);
-            var cell = GetMouseCellClick((Vector3)mouseWorldClick);
-            print(cell);
-            if (selectedUnit &&  selectedUnit.isMoving)
+            
+            var tileUnit = getUnitOnTile((Vector3)mouseWorldClick);
+            
+            var cellPosition = _gridManager.GetMouseCellClick((Vector3)mouseWorldClick);
+            
+            var hasCell = tileMap.GetTile((Vector3Int)cellPosition);
+            if (!hasCell)
+            {
+                return;
+            }
+            if (selectedUnit && selectedUnit.isMoving)
             {
                 return;
             }
@@ -135,13 +144,9 @@ public class UnitsManager: MonoBehaviour
 
             if (!tileUnit && selectedUnit)
             {
-                var mouseCellClick = GetMouseCellClick((Vector3)mouseWorldClick);
-                if (mouseCellClick.HasValue)
-                {
-                    var moveTo = tileMap.CellToWorld((Vector3Int )mouseCellClick);
-                    selectedUnit.Move((Vector3Int) mouseCellClick, (Vector3) moveTo, tileMap);
-                }
-
+                var mouseCellClick = _gridManager.GetMouseCellClick((Vector3)mouseWorldClick);
+                var moveTo = tileMap.CellToWorld((Vector3Int )mouseCellClick);
+                selectedUnit.Move((Vector3Int) mouseCellClick, (Vector3) moveTo, tileMap);
                 return;
             }
             if (selectedUnit && tileUnit)
