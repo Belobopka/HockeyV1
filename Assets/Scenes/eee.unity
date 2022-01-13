@@ -478,6 +478,7 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   maxMoveTime: 1
+  speed: 1.5
   isMoving: 0
   _moveCurve:
     serializedVersion: 2
@@ -487,6 +488,7 @@ MonoBehaviour:
     m_RotationOrder: 4
   remDist: 0
   evaluation: 0
+  magnitude: 0
   cellPosition: {x: 0, y: 0, z: 0}
   isSelected: 0
   moved: 0

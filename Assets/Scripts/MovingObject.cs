@@ -4,6 +4,7 @@ using System.Collections;
 	public abstract class MovingObject : MonoBehaviour
 	{
 		public float maxMoveTime = 2f;			//Time it will take object to move, in seconds.
+		public float speed = 1.5f;
 		private Rigidbody _rb3D;				//The Rigidbody2D component attached to this object.
 		private float _inverseMoveTime;			//Used to make movement more efficient.
 		public bool isMoving;					//Is the object currently moving.
@@ -11,6 +12,7 @@ using System.Collections;
 		private float _t;
 		public float remDist;
 		public float evaluation;
+		public float magnitude;
 		//Protected, virtual functions can be overridden by inheriting classes.
 		protected virtual void Start ()
 		{
@@ -37,7 +39,7 @@ using System.Collections;
 		//Co-routine for moving units from one space to next, takes a parameter end to specify where to move to.
 		protected IEnumerator SmoothMovement (Vector3 end)
 		{
-			_moveCurve = AnimationCurve.EaseInOut(0F, 0, maxMoveTime, 1F);
+
 			_t = 0.0f;
 			//The object is now moving.
 			isMoving = true;
@@ -45,9 +47,13 @@ using System.Collections;
 			//Calculate the remaining distance to move based on the square magnitude of the difference between current position and end parameter. 
 			//Square magnitude is used instead of magnitude because it's computationally cheaper.
 			float sqrRemainingDistance = (transform.position - end).sqrMagnitude;
+
+			magnitude = (startPosition - end).magnitude;
+			_moveCurve = AnimationCurve.EaseInOut(0F, 0, magnitude / speed, 1F);
 			//While that distance is greater than a very small amount (Epsilon, almost zero):
 			while(sqrRemainingDistance > float.Epsilon)
 			{
+				
 				_t += Time.deltaTime;
 
 				remDist = sqrRemainingDistance;
