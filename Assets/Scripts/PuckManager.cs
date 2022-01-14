@@ -93,13 +93,14 @@ namespace DefaultNamespace
 
             return false;
         }
-
+        
+        
         private void UpdatePlacingState()
         {
             
             if (_isPlacingPuck && Input.GetButtonDown("Fire1"))
             {
-                print(CheckIsClickOnUnit());
+
                 if (CheckIsClickOnUnit())
                 {
                     CancelPlacing();
@@ -115,19 +116,18 @@ namespace DefaultNamespace
             HandlePlacingPuckUpdate();
         }
 
-        private void Update()
+        public void HandleUpdate()
+        {
+            if (_isPlaced)
             {
-
-                if (_isPlaced)
-                {
-                    return;
-                }
-
-                if (_isPlacingPuck)
-                {
-                    UpdatePlacingState();
-                    return;
-                }
+                return;
             }
+
+            if (_isPlacingPuck)
+            {
+                UpdatePlacingState();
+                return;
+            }
+        }
     }
 }

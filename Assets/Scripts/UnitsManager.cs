@@ -17,9 +17,6 @@ public class UnitsManager: MonoBehaviour
     public int teamPlayersCount = 6;
     private Collider _tileMapCollider;
     private GridManager _gridManager;
-    public List<Vector3Int> availableTiles;
-    // public List<Vector3Int> allYCells;
-    public List<Vector3Int> newList;
     public bool IsUnitMoving => CheckIsUnitMoving();
     
     private void Start()
@@ -139,7 +136,6 @@ public class UnitsManager: MonoBehaviour
     {
         var allAvailableCellPositions = GetAllAvailableCells();
         var team1Tiles = PrepareTeam1Tiles(allAvailableCellPositions);
-        availableTiles = allAvailableCellPositions;
         var team2Cells = new List<Vector3Int>();
         foreach (var cell in allAvailableCellPositions)
         {
@@ -186,7 +182,7 @@ public class UnitsManager: MonoBehaviour
         return false;
     }
     
-    private void Update()
+    public void HandleUpdate()
     {
         if (Input.GetButtonDown("Fire1"))
         {
